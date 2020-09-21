@@ -14,7 +14,7 @@ class Config():
         # Model
         self.mode = 'train'
         self.gpu = True
-        self.n_epochs = 50
+        self.n_epochs = 100
         self.n_class = 2
         self.lr = 1e-3
         self.momentum = 0.9

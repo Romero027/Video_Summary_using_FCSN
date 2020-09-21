@@ -58,6 +58,7 @@ def get_keys(id):
     video_writer.release()
 
     keyframe_idx = [np.argmax(pred_score[cps[sel][0] : cps[sel][1]]) + cps[sel][0] for sel in pred_selected]
+    print(keyframe_idx)
     keyframes = frames[keyframe_idx]
 
     keyframe_dir = os.path.join(save_dir, id, 'keyframes')

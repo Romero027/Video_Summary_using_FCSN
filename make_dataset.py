@@ -50,7 +50,8 @@ transform = transforms.Compose([
 ])
 
 
-net = models.googlenet(pretrained=True).float().cuda()
+#net = models.googlenet(pretrained=True).float().cuda()
+net = torch.hub.load('pytorch/vision:v0.6.0', 'resnet18', pretrained=True).float().cuda()
 net.eval()
 fea_net = nn.Sequential(*list(net.children())[:-2])
 
@@ -98,13 +99,13 @@ def video2fea(video_path, h5_f):
     idx = video_path.as_uri().split('.')[0].split('/')[-1]
     tqdm.write('Processing video '+idx)
     length = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-    ratio = 1 
+    ratio = length//320
     fea = []
     label = []
-    usr_sum_arr = vsumm_data['video_'+idx]['user_summary'][()]
+    usr_sum_arr = vsumm_data[idx]['user_summary'][()]
     usr_sum = get_oracle_summary(usr_sum_arr) 
-    cps = vsumm_data['video_'+idx]['change_points'][()]
-    n_frame_per_seg = vsumm_data['video_'+idx]['n_frame_per_seg'][()]
+    cps = vsumm_data[idx]['change_points'][()]
+    n_frame_per_seg = vsumm_data[idx]['n_frame_per_seg'][()]
     i = 0
     success, frame = video.read()
     while success:
@@ -117,9 +118,8 @@ def video2fea(video_path, h5_f):
         i += 1
         success, frame = video.read()
     fea = torch.stack(fea)
-    cut_point = len(fea)//160
-    fea = fea[:160*cut_point]
-    label = label[:160*cut_point]
+    fea = fea[:320]
+    label = label[:320]
     v_data = h5_f.create_group('video_'+idx)
     v_data['feature'] = fea.numpy()
     v_data['label'] = label
@@ -128,9 +128,8 @@ def video2fea(video_path, h5_f):
     v_data['n_frame_per_seg'] = n_frame_per_seg
     v_data['picks'] = [ratio*i for i in range(320)]
     v_data['user_summary'] = usr_sum_arr
-    # if fea.shape[0] != 320 or len(label) != 320:
-    #     print('error in video ', idx, feashape[0], len(label))
-
+    if fea.shape[0] != 320 or len(label) != 320:
+        print('error in video ', idx, feashape[0], len(label))
 
 def make_dataset(video_dir, h5_path):
     video_dir = Path(video_dir).resolve()

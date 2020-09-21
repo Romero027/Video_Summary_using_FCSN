@@ -120,7 +120,7 @@ class FCSN(nn.Module):
 
 
 if __name__ == '__main__':
-    import torch
+    import torch, time
     from torchsummary import summary
     net = FCSN()
     data = torch.randn((1, 1024, 320))

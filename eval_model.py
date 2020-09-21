@@ -11,6 +11,7 @@ from prettytable import PrettyTable
 
 from fcsn import FCSN
 import eval
+import time
 
 
 class Solver(object):
@@ -51,48 +52,6 @@ class Solver(object):
         loss = criterion(log_p, gt_labels)
         return loss
 
-    def train(self):
-        writer = SummaryWriter(log_dir=self.config.log_dir)
-        t = trange(self.config.n_epochs, desc='Epoch', ncols=80)
-        for epoch_i in t:
-            sum_loss_history = []
-
-            for batch_i, (feature, label,  _) in enumerate(tqdm(self.train_loader, desc='Batch', ncols=80, leave=False)):
-                # [batch_size, 1024, seq_len]
-                feature.requires_grad_()
-                # => cuda
-                if self.config.gpu:
-                    feature = feature.cuda()
-                    label = label.cuda()
-
-                # ---- Train ---- #
-                print("-"*30+str(feature.size()))
-                pred_score = self.model(feature)
-
-                label_1 = label.sum() / label.shape[0]
-                label_0 = label.shape[1] - label_1
-                weight = torch.tensor([label_1, label_0], dtype=torch.float)
-
-                if self.config.gpu:
-                    weight = weight.cuda()
-
-                loss = self.sum_loss(pred_score, label, weight)
-                loss.backward()
-
-                self.optimizer.step()
-                self.optimizer.zero_grad()
-                sum_loss_history.append(loss)
-
-            mean_loss = torch.stack(sum_loss_history).mean().item()
-            t.set_postfix(loss=mean_loss)
-            writer.add_scalar('Loss', mean_loss, epoch_i)
-
-            if (epoch_i+1) % 5 == 0:
-                ckpt_path = self.config.save_dir + '/epoch-{}.pkl'.format(epoch_i)
-                tqdm.write('Save parameters at {}'.format(ckpt_path))
-                torch.save(self.model.state_dict(), ckpt_path)
-                self.evaluate(epoch_i)
-                self.model.train()
 
     def evaluate(self, model_path):
         self.model.eval()
@@ -104,16 +63,25 @@ class Solver(object):
         table.title = 'Eval result'
         table.field_names = ['ID', 'Precision', 'Recall', 'F-score']
         table.float_format = '1.3'
-
+        
+        inference_time = []
         with h5py.File(self.config.data_path) as data_file:
             for feature, label, idx in tqdm(self.test_dataset, desc='Evaluate', ncols=80, leave=False):
                 if self.config.gpu:
                     feature = feature.cuda()
+
+
+                start = time.time()
+                print(feature.size())
                 pred_score = self.model(feature.unsqueeze(0)).squeeze(0)
+                inference_time.append(time.time() - start)
+
+
                 pred_score = torch.softmax(pred_score, dim=0)[1]
                 video_info = data_file['video_'+str(idx)]
                 pred_score, pred_selected, pred_summary = eval.select_keyshots(video_info, pred_score)
                 true_summary_arr = video_info['user_summary'][()]
+                print(len(pred_summary), len(true_summary_arr[0]))
                 eval_res = [eval.eval_metrics(pred_summary, true_summary) for true_summary in true_summary_arr]
                 eval_res = np.mean(eval_res, axis=0).tolist()
 
@@ -128,6 +96,7 @@ class Solver(object):
         eval_mean = np.mean(eval_arr, axis=0).tolist()
         table.add_row(['mean']+eval_mean)
         tqdm.write(str(table))
+        print(inference_time)
 
 
 if __name__ == '__main__':
@@ -137,5 +106,5 @@ if __name__ == '__main__':
     test_config = Config(mode='test')
     train_loader, test_dataset = get_loader(train_config.data_path, batch_size=train_config.batch_size)
     solver = Solver(train_config, train_loader, test_dataset)
-    model_path = ""
+    model_path = "/home/ubuntu/Video_Summary_using_FCSN/save_dir/epoch-99.pkl"
     solver.evaluate(model_path)

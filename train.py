@@ -66,7 +66,7 @@ class Solver(object):
                     label = label.cuda()
 
                 # ---- Train ---- #
-                print("-"*30+str(feature.size()))
+                #print("-"*30+str(feature.size()))
                 pred_score = self.model(feature)
 
                 label_1 = label.sum() / label.shape[0]
@@ -87,7 +87,7 @@ class Solver(object):
             t.set_postfix(loss=mean_loss)
             writer.add_scalar('Loss', mean_loss, epoch_i)
 
-            if (epoch_i+1) % 5 == 0:
+            if (epoch_i+1) % 10 == 0:
                 ckpt_path = self.config.save_dir + '/epoch-{}.pkl'.format(epoch_i)
                 tqdm.write('Save parameters at {}'.format(ckpt_path))
                 torch.save(self.model.state_dict(), ckpt_path)
