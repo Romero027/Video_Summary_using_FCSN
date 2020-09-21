@@ -32,10 +32,11 @@ with open(json_path) as f:
 
 def get_keys(id):
     video_info = f_data['video_' + id]
-    video_path = os.path.join(video_dir, id+'.mp4')
+    video_path = os.path.join(video_dir, 'video_' + id +'.mp4')
     cps = video_info['change_points'][()]
     pred_score = json_dict[id]['pred_score']
     pred_selected = json_dict[id]['pred_selected']
+    print(f"Reading from video {video_path}")
 
     video = cv2.VideoCapture(video_path)
     frames = []

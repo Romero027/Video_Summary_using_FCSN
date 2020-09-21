@@ -58,7 +58,6 @@ class Solver(object):
             sum_loss_history = []
 
             for batch_i, (feature, label,  _) in enumerate(tqdm(self.train_loader, desc='Batch', ncols=80, leave=False)):
-
                 # [batch_size, 1024, seq_len]
                 feature.requires_grad_()
                 # => cuda
@@ -67,6 +66,7 @@ class Solver(object):
                     label = label.cuda()
 
                 # ---- Train ---- #
+                print("-"*30+str(feature.size()))
                 pred_score = self.model(feature)
 
                 label_1 = label.sum() / label.shape[0]

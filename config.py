@@ -6,7 +6,7 @@ class Config():
     def __init__(self, **kwargs):
 
         # Path
-        self.data_path = '../data/fcsn_tvsum.h5'
+        self.data_path = './data/fcsn_tvsum.h5'
         self.save_dir = 'save_dir'
         self.score_dir = 'score_dir'
         self.log_dir = 'log_dir'
