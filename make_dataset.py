@@ -51,10 +51,12 @@ transform = transforms.Compose([
 
 
 #net = models.googlenet(pretrained=True).float().cuda()
-net = torch.hub.load('pytorch/vision:v0.6.0', 'resnet18', pretrained=True).float().cuda()
+net = torch.hub.load('pytorch/vision:v0.5.0', 'shufflenet_v2_x1_0', pretrained=True).float().cuda()
+#net = models.shufflenet_v2_x1_0(pretrained=True).float().cuda()
+#net = torch.hub.load('pytorch/vision:v0.5.0', 'densenet121', pretrained=True).float().cuda()
 net.eval()
-fea_net = nn.Sequential(*list(net.children())[:-2])
-
+fea_net = nn.Sequential(*list(net.children())[:-1])
+#fea_net = net
 
 def sum_fscore(overlap_arr, true_sum_arr, oracle_sum):
     fscores = []
@@ -110,7 +112,9 @@ def video2fea(video_path, h5_f):
     success, frame = video.read()
     while success:
         if (i+1) % ratio == 0:
-            fea.append(fea_net(transform(Image.fromarray(frame)).cuda().unsqueeze(0)).squeeze().detach().cpu())
+            fea.append(fea_net(transform(Image.fromarray(frame)).cuda().unsqueeze(0)).squeeze().detach().cpu().mean(1).mean(1))
+            #fea.append(fea_net(transform(Image.fromarray(frame)).cuda().unsqueeze(0)).squeeze().detach().cpu())
+            #fea.append(fea_net(transform(Image.fromarray(frame)).cuda().unsqueeze(0)).detach().cpu())
             try:
                 label.append(usr_sum[i])
             except:
@@ -120,7 +124,7 @@ def video2fea(video_path, h5_f):
     fea = torch.stack(fea)
     fea = fea[:320]
     label = label[:320]
-    v_data = h5_f.create_group('video_'+idx)
+    v_data = h5_f.create_group(idx)
     v_data['feature'] = fea.numpy()
     v_data['label'] = label
     v_data['length'] = len(usr_sum)

@@ -17,7 +17,7 @@ def eval_metrics(y_pred, y_true):
 
 def select_keyshots(video_info, pred_score):
     N = video_info['length'][()]
-    print("-"*100 + str(N) + "-" *20)
+    #print("-"*100 + str(N) + "-" *20)
     cps = video_info['change_points'][()]
     weight = video_info['n_frame_per_seg'][()]
     pred_score = np.array(pred_score.cpu().data)

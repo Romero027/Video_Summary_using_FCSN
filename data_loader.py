@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
+torch.manual_seed(0)
 
 import h5py
 

@@ -51,14 +51,13 @@ def get_keys(id):
             keyshots.append(frames[i])
     keyshots = np.array(keyshots)
 
-    write_path = os.path.join(save_dir, id, 'summary.avi')
-    video_writer = cv2.VideoWriter(write_path, cv2.VideoWriter_fourcc(*'XVID'), 24, keyshots.shape[2:0:-1])
-    for frame in keyshots:
-        video_writer.write(frame)
-    video_writer.release()
+    #write_path = os.path.join(save_dir, id, 'summary.avi')
+    #video_writer = cv2.VideoWriter(write_path, cv2.VideoWriter_fourcc(*'XVID'), 24, keyshots.shape[2:0:-1])
+    #for frame in keyshots:
+    #    video_writer.write(frame)
+    #video_writer.release()
 
     keyframe_idx = [np.argmax(pred_score[cps[sel][0] : cps[sel][1]]) + cps[sel][0] for sel in pred_selected]
-    print(keyframe_idx)
     keyframes = frames[keyframe_idx]
 
     keyframe_dir = os.path.join(save_dir, id, 'keyframes')
@@ -67,7 +66,7 @@ def get_keys(id):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         plt.axis('off')
         plt.imshow(img)
-        plt.savefig(os.path.join(keyframe_dir, '{}.jpg'.format(i)))
+        plt.savefig(os.path.join(keyframe_dir, '{}.jpg'.format(keyframe_idx[i])))
 
 
 def plot_bar():
@@ -102,6 +101,7 @@ def gen_summary():
         os.mkdir(save_dir)
 
     for id in ids:
+        print(id)
         os.mkdir(os.path.join(save_dir, id))
         get_keys(id)
     

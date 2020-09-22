@@ -72,7 +72,7 @@ class Solver(object):
 
 
                 start = time.time()
-                print(feature.size())
+                #print(feature.size())
                 pred_score = self.model(feature.unsqueeze(0)).squeeze(0)
                 inference_time.append(time.time() - start)
 
@@ -81,7 +81,7 @@ class Solver(object):
                 video_info = data_file['video_'+str(idx)]
                 pred_score, pred_selected, pred_summary = eval.select_keyshots(video_info, pred_score)
                 true_summary_arr = video_info['user_summary'][()]
-                print(len(pred_summary), len(true_summary_arr[0]))
+                #print(len(pred_summary), len(true_summary_arr[0]))
                 eval_res = [eval.eval_metrics(pred_summary, true_summary) for true_summary in true_summary_arr]
                 eval_res = np.mean(eval_res, axis=0).tolist()
 
@@ -106,5 +106,5 @@ if __name__ == '__main__':
     test_config = Config(mode='test')
     train_loader, test_dataset = get_loader(train_config.data_path, batch_size=train_config.batch_size)
     solver = Solver(train_config, train_loader, test_dataset)
-    model_path = "/home/ubuntu/Video_Summary_using_FCSN/save_dir/epoch-99.pkl"
+    model_path = "/home/ubuntu/Video_Summary_using_FCSN/googlenet_result/save_dir/epoch-99.pkl"
     solver.evaluate(model_path)
