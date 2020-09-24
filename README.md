@@ -21,6 +21,14 @@ A TVSum dataset (downsampled to 320 frames per video) preprocessed by `make_data
 | `n_frame_per_seg` | shape (n_segments, ) <br>number of frames in each segment |
 | `user_summary` | shape (20, length) <br>summary from 20 users, each row is a binary vector |
 
+How to run make_dataset.py?
+
+```shell
+python make_dataset.py --video_dir data/ydata-tvsum50-v1_1/video/ --h5_path fcsn_tvsum_densenet121.h5 --vsumm_data data/datasets/eccv16_dataset_tvsum_google_pool5.h5
+```
+
+Change make dataset to use different CNN models.
+
 ## Train
 
 First change the `data_path` in `config.py` to your own hdf5 data path. Then run
@@ -31,12 +39,20 @@ python train.py
 
 Every 5 epoch, model parameters and predicted summaries will be saved in save_dir and score_dir respectively. Evaluation result (precision, recall and f-score) will be printed at the same time.
 
+## Inference
+
+```shell
+python train.py
+```
+
 ## Generate Summary
 
 To generate keyframes (images) and keyshots (video), run
 
 ```shell
 python gen_summary.py --h5_path {your hdf5 dataset path} --json_path {json file path saved in score_dir} --data_root {root dir of tvsum dataset} --save_dir {where to save the generating summary} --bar
+
+python gen_summary.py --h5_path ./data/fcsn_tvsum.h5 --json_path score_dir/epoch-99.json --data_root data/ --save_dir result --bar
 ```
 
 preview of score-bar (x-axis: frame index, y-axis: user's score, and columns in orange is selected keyshots):
